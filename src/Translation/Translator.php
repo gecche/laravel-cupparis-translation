@@ -1,6 +1,6 @@
 <?php
 
-namespace Cupparis\Translation;
+namespace Gecche\Cupparis\Translation;
 
 use Illuminate\Support\Facades\Config;
 
@@ -114,14 +114,17 @@ class Translator extends \Illuminate\Translation\Translator {
      * As get but returning null if the $key does not exists
      */
 
-    public function getRaw($key, array $replace = array(), $locale = null) {
+    public function getRaw($key, array $replace = array(), $locale = null, $fallback = true) {
         $line = null;
         list($namespace, $group, $item) = $this->parseKey($key);
 
         // Here we will get the locale that should be used for the language line. If one
         // was not passed, we will use the default locales which was given to us when
         // the translator was instantiated. Then, we can load the lines and return.
-        foreach ($this->parseLocale($locale) as $locale) {
+        $locales = $fallback ? $this->localeArray($locale)
+            : [$locale ?: $this->locale];
+
+        foreach ($locales as $locale) {
             $this->load($namespace, $group, $locale);
 
             $line = $this->getLine(

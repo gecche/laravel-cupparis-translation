@@ -1,6 +1,6 @@
 {
-    "name": "gecche/laravel-cupparis-model-skeleton",
-    "description": "Utility per la creazione semiautomatica di migrazione, modello e modelconf",
+    "name": "gecche/laravel-cupparis-translation",
+    "description": "Utility per semiautomatizzare le traduzioni eloquent",
     "keywords": ["laravel", "cupparis"],
     "license": "MIT",
     "authors": [
