@@ -3,6 +3,8 @@
 namespace Gecche\Cupparis\Translation;
 
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Arr;
+
 
 class Translator extends \Illuminate\Translation\Translator {
 
@@ -50,8 +52,8 @@ class Translator extends \Illuminate\Translation\Translator {
 
             list($finalKey, $prefixKey) = $this->splitFinalKey($key);
 
-            $suffix = array_get($magic_params, 'suffix', false);
-            $prefix = array_get($magic_params, 'prefix', false);
+            $suffix = Arr::get($magic_params, 'suffix', false);
+            $prefix = Arr::get($magic_params, 'prefix', false);
             $prefixed = false;
             $suffixed = false;
 
@@ -74,13 +76,13 @@ class Translator extends \Illuminate\Translation\Translator {
             }
         }
 
-        if (is_null($line) && array_get($magic_params, 'nullable', false)) {
+        if (is_null($line) && Arr::get($magic_params, 'nullable', false)) {
             return null;
         }
 
         if (is_null($line)) {
             $line = $key;
-            if (array_get($magic_params, 'humanize', true)) {
+            if (Arr::get($magic_params, 'humanize', true)) {
                 $line = $this->humanize($line);
             }
         }
@@ -88,11 +90,11 @@ class Translator extends \Illuminate\Translation\Translator {
 
 
         //A bit of magic more! :D
-//        if (array_get($magic_params, 'humanize', true)) {
+//        if (Arr::get($magic_params, 'humanize', true)) {
 //            $line = $this->humanize($line);
 //        }
 
-        $capitals = array_get($magic_params, 'capitals', false);
+        $capitals = Arr::get($magic_params, 'capitals', false);
         switch ($capitals) {
             case 'ucfirst':
                 $line = ucfirst($line);
