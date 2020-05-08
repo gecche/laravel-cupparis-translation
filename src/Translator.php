@@ -4,6 +4,7 @@ namespace Gecche\Cupparis\Translation;
 
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 
 class Translator extends \Illuminate\Translation\Translator {
@@ -57,14 +58,14 @@ class Translator extends \Illuminate\Translation\Translator {
             $prefixed = false;
             $suffixed = false;
 
-            if ($prefix && starts_with($finalKey, $prefix . $separator)) {
+            if ($prefix && Str::startsWith($finalKey, $prefix . $separator)) {
                 $prefix = $prefix . $separator;
                 $keyWithoutPrefix = $prefixKey . substr($finalKey, strlen($prefix));
                 $line = $this->getRaw($keyWithoutPrefix);
                 $prefixed = true;
             }
 
-            if ($line === null && $suffix && ends_with($key, $separator . $suffix)) {
+            if ($line === null && $suffix && Str::endsWith($key, $separator . $suffix)) {
                 $suffix = $separator . $suffix;
                 $line = $this->getRaw(substr($key, 0, -strlen($suffix)));
                 $suffixed = true;
@@ -171,7 +172,7 @@ class Translator extends \Illuminate\Translation\Translator {
     public function getMFormField($key, $model, array $replace = array(), $locale = null, $capitals = 'ucfirst', $separator = '_', $path = 'fields.') {
         $first_attempt_key = $path . $model . $separator . $key;
         $result = $this->getM($first_attempt_key, $replace, $locale, array('prefix' => $model, 'capitals' => $capitals, 'nullable' => true), $separator);
-        if ($result === null && ends_with($key, '_id')) {
+        if ($result === null && Str::endsWith($key, '_id')) {
             $second_attempt_key = $path . $model . $separator . substr($key, 0, -3);
             $result = $this->getM($second_attempt_key, $replace, $locale, array('prefix' => $model, 'capitals' => $capitals), $separator);
         }
@@ -186,7 +187,7 @@ class Translator extends \Illuminate\Translation\Translator {
 
         $first_attempt_key = $path . $model . $separator . $key . $separator . 'label';
         $result = $this->getM($first_attempt_key, $replace, $locale, array('prefix' => $model, 'suffix' => 'label', 'capitals' => $capitals, 'nullable' => true), $separator);
-        if ($result === null && ends_with($key, '_id')) {
+        if ($result === null && Str::endsWith($key, '_id')) {
             $second_attempt_key = $path . $model . $separator . substr($key, 0, -3) . $separator . 'label';
             $result = $this->getM($second_attempt_key, $replace, $locale, array('prefix' => $model, 'suffix' => 'label', 'capitals' => $capitals), $separator);
         }
