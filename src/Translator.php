@@ -40,7 +40,7 @@ class Translator extends \Illuminate\Translation\Translator {
      * @param  array   $magic params
      * @return string
      */
-    public function getM($key, array $replace = array(), $locale = null, $magic_params = array(), $separator = '_') {
+    public function getM($key, array $replace = [], $locale = null, $magic_params = [], $separator = '_') {
 
 
 
@@ -96,28 +96,33 @@ class Translator extends \Illuminate\Translation\Translator {
 //        }
 
         $capitals = Arr::get($magic_params, 'capitals', false);
+        return $this->capitalizations($line,$capitals);
+    }
+
+
+    public function capitalizations($subject,$capitals = false) {
         switch ($capitals) {
             case 'ucfirst':
-                $line = ucfirst($line);
+                $subject = ucfirst($subject);
                 break;
             case 'capitalize':
-                $line = ucwords($line);
+                $subject = ucwords($subject);
                 break;
             case 'uppercase':
-                $line = strtoupper($line);
+                $subject = strtoupper($subject);
                 break;
             default:
                 break;
         }
 
-        return $line;
+        return $subject;
     }
 
     /*
      * As get but returning null if the $key does not exists
      */
 
-    public function getRaw($key, array $replace = array(), $locale = null, $fallback = true) {
+    public function getRaw($key, array $replace = [], $locale = null, $fallback = true) {
         $line = null;
         list($namespace, $group, $item) = $this->parseKey($key);
 
@@ -141,71 +146,74 @@ class Translator extends \Illuminate\Translation\Translator {
     }
 
     public function humanize($key) {
-        $key = str_replace(array('-', '_'), ' ', $key);
+        $key = str_replace(['-', '_'], ' ', $key);
         return $key;
     }
 
     protected function splitFinalKey($key) {
         $lastDot = strrpos($key, '.');
         if ($lastDot === false) {
-            return array($key, '');
+            return [$key, ''];
         }
-        return array(substr($key, $lastDot + 1), substr($key, 0, $lastDot + 1));
+        return [substr($key, $lastDot + 1), substr($key, 0, $lastDot + 1)];
     }
 
     protected function splitPrefix($key, $separator) {
         $separatorPos = strpos($key, $separator);
         if ($separatorPos === false) {
-            return array(false, $key);
+            return [false, $key];
         }
-        return array(substr($key, 0, $separatorPos), substr($key, $separatorPos + 1));
+        return [substr($key, 0, $separatorPos), substr($key, $separatorPos + 1)];
     }
 
     protected function splitSuffix($key, $separator) {
         $separatorPos = strrpos($key, $separator);
         if ($separatorPos === false) {
-            return array(false, $key);
+            return [false, $key];
         }
-        return array(substr($key, $separatorPos), substr($key, 0, $separatorPos + 1));
+        return [substr($key, $separatorPos), substr($key, 0, $separatorPos + 1)];
     }
 
-    public function getMFormField($key, $model, array $replace = array(), $locale = null, $capitals = 'ucfirst', $separator = '_', $path = 'fields.') {
+    public function getMFormField($key, $model, array $replace = [], $locale = null, $capitals = 'ucfirst', $separator = '_', $path = 'fields.') {
         $first_attempt_key = $path . $model . $separator . $key;
-        $result = $this->getM($first_attempt_key, $replace, $locale, array('prefix' => $model, 'capitals' => $capitals, 'nullable' => true), $separator);
+        $result = $this->getM($first_attempt_key, $replace, $locale, ['prefix' => $model, 'capitals' => $capitals, 'nullable' => true], $separator);
         if ($result === null && Str::endsWith($key, '_id')) {
             $second_attempt_key = $path . $model . $separator . substr($key, 0, -3);
-            $result = $this->getM($second_attempt_key, $replace, $locale, array('prefix' => $model, 'capitals' => $capitals), $separator);
+            $result = $this->getM($second_attempt_key, $replace, $locale, ['prefix' => $model, 'capitals' => $capitals], $separator);
         }
         if ($result === null && $this->checkLang($key)) {
             $third_attempt_key = $path . $model . $separator . substr($key, 0, -3);
-            $result = $this->getM($third_attempt_key, $replace, $locale, array('prefix' => $model, 'capitals' => $capitals), $separator);
+            $result = $this->getM($third_attempt_key, $replace, $locale, ['prefix' => $model, 'capitals' => $capitals], $separator);
         }
         return $result;
     }
 
-    public function getMFormLabel($key, $model, array $replace = array(), $locale = null, $capitals = 'ucfirst', $separator = '_', $path = 'fields.') {
+    public function getMFormLabel($key, $model, array $replace = [], $locale = null, $capitals = 'ucfirst', $separator = '_', $path = 'fields.') {
 
         $first_attempt_key = $path . $model . $separator . $key . $separator . 'label';
-        $result = $this->getM($first_attempt_key, $replace, $locale, array('prefix' => $model, 'suffix' => 'label', 'capitals' => $capitals, 'nullable' => true), $separator);
+        $result = $this->getM($first_attempt_key, $replace, $locale, ['prefix' => $model, 'suffix' => 'label', 'capitals' => $capitals, 'nullable' => true], $separator);
         if ($result === null && Str::endsWith($key, '_id')) {
             $second_attempt_key = $path . $model . $separator . substr($key, 0, -3) . $separator . 'label';
-            $result = $this->getM($second_attempt_key, $replace, $locale, array('prefix' => $model, 'suffix' => 'label', 'capitals' => $capitals), $separator);
+            $result = $this->getM($second_attempt_key, $replace, $locale, ['prefix' => $model, 'suffix' => 'label', 'capitals' => $capitals], $separator);
         }
         if ($result === null && $this->checkLang($key)) {
             $third_attempt_key = $path . $model . $separator . substr($key, 0, -3);
-            $result = $this->getM($third_attempt_key, $replace, $locale, array('prefix' => $model, 'capitals' => $capitals), $separator);
+            $result = $this->getM($third_attempt_key, $replace, $locale, ['prefix' => $model, 'capitals' => $capitals], $separator);
+        }
+        if ($result === null) {
+            $result = $this->getM($key,$replace,$locale,['capitals' => $capitals, 'nullable' => false],$separator);
         }
         return $result;
     }
 
-    public function getMFormMsg($key, $model, array $replace = array(), $locale = null, $capitals = 'ucfirst', $separator = '_', $path = 'fields.') {
+    public function getMFormMsg($key, $model, array $replace = [], $locale = null, $capitals = 'ucfirst', $separator = '_', $path = 'fields.') {
         $first_attempt_key = $path . $model . $separator . $key . $separator . 'msg';
-        return $this->getM($first_attempt_key, $replace, $locale, array('prefix' => $model, 'capitals' => $capitals, 'nullable' => true), $separator);
+        return $this->getM($first_attempt_key, $replace, $locale, ['prefix' => $model, 'capitals' => $capitals, 'nullable' => true], $separator);
     }
 
-    public function getMFormAddedLabel($key, $model, array $replace = array(), $locale = null, $capitals = 'ucfirst', $separator = '_', $path = 'fields.') {
+    public function getMFormAddedLabel($key, $model, array $replace = [], $locale = null, $capitals = 'ucfirst', $separator = '_', $path = 'fields.') {
         $first_attempt_key = $path . $model . $separator . $key . $separator . 'addedLabel';
-        return $this->getM($first_attempt_key, $replace, $locale, array('prefix' => $model, 'capitals' => $capitals, 'nullable' => true), $separator);
+        return $this->getM($first_attempt_key, $replace, $locale, ['prefix' => $model, 'capitals' => $capitals, 'nullable' => true], $separator);
     }
     
     public function checkLang($key) {
