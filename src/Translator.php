@@ -145,6 +145,30 @@ class Translator extends \Illuminate\Translation\Translator {
         return $line;
     }
 
+    public function choiceRaw($key, $number, array $replace = [], $locale = null)
+    {
+        $line = $this->getRaw(
+            $key, $replace, $locale = $this->localeForChoice($locale)
+        );
+
+        if (is_null($line)) {
+            return null;
+        }
+
+        // If the given "number" is actually an array or countable we will simply count the
+        // number of elements in an instance. This allows developers to pass an array of
+        // items without having to count it on their end first which gives bad syntax.
+        if (is_array($number) || $number instanceof Countable) {
+            $number = count($number);
+        }
+
+        $replace['count'] = $number;
+
+        return $this->makeReplacements(
+            $this->getSelector()->choose($line, $number, $locale), $replace
+        );
+    }
+
     public function humanize($key) {
         $key = str_replace(['-', '_'], ' ', $key);
         return $key;
